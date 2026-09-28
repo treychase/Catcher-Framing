@@ -267,7 +267,7 @@ footer a{color:inherit;text-decoration:none;border-bottom:1px solid var(--line)}
 <div class="tip" id="tip"></div>
 
 <footer class="wrap">
-  <span>&copy; 2026 Trey Chase</span>
+  <span>© 2026 Trey Chase</span>
   <span><a href="https://github.com/treychase/Catcher-Framing">Code on GitHub</a></span>
 </footer>
 
@@ -534,11 +534,22 @@ function renderValidation(){
     line(svg, [[x0, my + b*(x0-mx)], [x1, my + b*(x1-mx)]], sx, sy, {stroke:C.gold});
     const sorted = rows.slice().sort((a,b) => b.frame_score_100 - a.frame_score_100);
     const labelled = new Set([...sorted.slice(0,3), ...sorted.slice(-3)].map(d => d.catcher_id));
+    // Labels go on after the dots, nudged apart vertically so neighbours never overprint.
+    const placed = [];
+    const labels = [];
     rows.forEach(d => {
       const c = el("circle", {cx:sx(d.strikes_added_100), cy:sy(d.frame_score_100), r:4.5, fill:C.field, "fill-opacity":.8, stroke:"#fff", "stroke-width":1.5, style:"cursor:pointer"}, svg);
       hover(c, `<b>${esc(d.catcher)}</b><br>Frame Score/100 ${fmt(d.frame_score_100,1,true)} · grade ${d.grade}<br>Model SA/100 ${fmt(d.strikes_added_100,1,true)} · grade ${d.model_grade}`);
       c.onclick = () => { select(d.catcher_id); $("zones").scrollIntoView(); };
-      if (labelled.has(d.catcher_id)) { const right = sx(d.strikes_added_100) > 360; text(svg, sx(d.strikes_added_100) + (right ? -8 : 8), sy(d.frame_score_100) + 3, d.catcher, {fill:C.ink, "font-size":9.5, "text-anchor":right ? "end" : "start"}); }
+      if (labelled.has(d.catcher_id)) labels.push(d);
+    });
+    labels.sort((a,b) => sy(a.frame_score_100) - sy(b.frame_score_100)).forEach(d => {
+      const right = sx(d.strikes_added_100) > 360, x = sx(d.strikes_added_100) + (right ? -8 : 8);
+      const w = 6 * d.catcher.length, x0 = right ? x - w : x;
+      let y = sy(d.frame_score_100) + 3;
+      placed.forEach(p => { if (Math.abs(p.y - y) < 12 && x0 < p.x0 + p.w && p.x0 < x0 + w) y = p.y + 12; });
+      placed.push({x0, w, y});
+      text(svg, x, y, d.catcher, {fill:C.ink, "font-size":9.5, "text-anchor":right ? "end" : "start"});
     });
   }
 

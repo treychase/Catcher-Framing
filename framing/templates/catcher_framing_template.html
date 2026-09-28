@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catcher Framing &middot; Trey Chase</title>
+<meta name="description" content="Shadow-zone catcher framing grades, validated against a gradient-boosted called-strike model with umpire effects.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%231F5C43'/%3E%3Ctext x='16' y='23' font-family='Helvetica,Arial,sans-serif' font-size='16' font-weight='bold' fill='%23ECEFE6' text-anchor='middle'%3ETC%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --paper:#ECEFE6;--panel:#E3E7DB;--card:#F4F6F0;--ink:#14201B;--muted:#4B5A52;
+  --field:#1F5C43;--field-deep:#153F2E;--gold:#DFA22C;
+  --line:rgba(20,32,27,.16);--line-soft:rgba(20,32,27,.08);
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:"Helvetica Neue",Arial,sans-serif;
+  /* diverging: warm for strikes gained, cool for strikes given away. Blue and
+     red rather than green and red so a red-green colourblind reader can split them. */
+  --cool:#2166AC;--warm:#B2182B;--mid:#F3F1EC;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans)}
+.bar{position:sticky;top:0;z-index:20;background:var(--field);border-bottom:1px solid var(--field-deep);
+  display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 22px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase}
+.bar a{color:rgba(236,239,230,.75);text-decoration:none}
+.bar a:hover{color:var(--paper)}
+.bar .who{color:var(--paper);font-weight:500}
+main{max-width:1180px;margin:0 auto;padding:22px 16px}
+h1{font-size:clamp(1.3rem,3vw,1.9rem);font-weight:800;letter-spacing:-.02em;margin:0 0 6px;text-transform:uppercase}
+h2{font-size:1.05rem;font-weight:800;letter-spacing:.02em;text-transform:uppercase;margin:0 0 4px}
+h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--field);margin:0 0 10px}
+.sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 18px}
+p{line-height:1.6}
+p.intro{font-size:16px;max-width:74ch;margin:0 0 18px}
+p.lede{font-size:15px;max-width:74ch;margin:0 0 16px;color:var(--ink)}
+nav.toc{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 26px}
+nav.toc a{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--field);
+  text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:7px 12px;background:var(--card)}
+nav.toc a:hover{border-color:var(--field)}
+section{margin:0 0 42px;scroll-margin-top:60px}
+.banner{border-left:3px solid var(--warm);background:rgba(178,24,43,.08);padding:12px 16px;margin:0 0 18px;font-size:14px;line-height:1.5}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:0 0 30px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px 16px}
+.kpi .v{font-size:1.7rem;font-weight:800;letter-spacing:-.02em}
+.kpi .l{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:4px;line-height:1.4}
+.controls{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin:0 0 14px}
+.controls label{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.pills{display:inline-flex;flex-wrap:wrap;gap:6px}
+.pills button{appearance:none;cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  padding:8px 13px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+.pills button:hover{border-color:var(--field);color:var(--field)}
+.pills button.on{background:var(--field);border-color:var(--field);color:var(--paper)}
+select{font-family:var(--mono);font-size:12px;padding:8px 12px;border-radius:999px;border:1px solid var(--line);
+  background:var(--paper);color:var(--ink);max-width:100%}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,500px),1fr));gap:18px}
+.three{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:18px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px;min-width:0}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  text-align:right;padding:7px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+th.l,td.l{text-align:left}
+td{padding:7px 6px;border-bottom:1px solid var(--line-soft);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr{cursor:pointer}
+tbody tr:hover td{background:rgba(31,92,67,.06)}
+tbody tr.sel td{background:rgba(223,162,44,.16)}
+th.sort{cursor:pointer}
+th.sort:hover{color:var(--field)}
+.grade{display:inline-block;min-width:34px;text-align:center;font-family:var(--mono);font-weight:700;font-size:12px;
+  padding:3px 6px;border-radius:4px;color:#fff}
+.pos{color:var(--warm)}.neg{color:var(--cool)}
+.heatwrap{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:760px){.heatwrap{grid-template-columns:1fr}}
+.card h4{margin:0 0 2px;font-size:1.35rem;font-weight:800;letter-spacing:-.01em}
+.card .sub{margin-bottom:12px}
+dl.stats{display:grid;grid-template-columns:1fr auto;gap:6px 14px;margin:0;font-size:14px}
+dl.stats dt{color:var(--muted)}
+dl.stats dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.minis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.mini{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px;cursor:pointer}
+.mini:hover{border-color:var(--field)}
+.mini .n{font-size:12px;font-weight:700;margin:0 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini .g{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.08em}
+svg text{font-family:var(--mono);fill:var(--muted);font-size:10px}
+svg .axis line,svg .axis path{stroke:var(--line)}
+svg .grid line{stroke:var(--line-soft)}
+.legend{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;font-family:var(--mono);font-size:10px;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ramp{height:10px;width:min(220px,50vw);border:1px solid var(--line);border-radius:2px}
+.key{display:inline-flex;align-items:center;gap:6px}
+.sw{display:inline-block;width:14px;height:3px;border-radius:2px}
+.tip{position:fixed;pointer-events:none;opacity:0;transition:opacity .1s ease;background:var(--ink);color:var(--paper);
+  font-family:var(--mono);font-size:11px;padding:7px 10px;border-radius:4px;z-index:50;line-height:1.5;white-space:nowrap}
+.note{border-left:3px solid var(--gold);background:rgba(223,162,44,.1);padding:14px 16px;margin:18px 0 0;font-size:15px;line-height:1.55;max-width:80ch}
+.note b{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px;color:var(--field-deep)}
+.method p{max-width:80ch;font-size:15px}
+.method a{color:var(--field)}
+.method code{font-family:var(--mono);font-size:12.5px;background:var(--panel);padding:1px 5px;border-radius:3px}
+details summary{cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--field);margin:14px 0 8px}
+footer{border-top:1px solid var(--line);margin-top:40px;padding:24px 22px 40px;font-family:var(--mono);font-size:11px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;flex-wrap:wrap;gap:10px 26px;justify-content:space-between}
+footer a{color:inherit;text-decoration:none;border-bottom:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <a href="../index.html#baseball">&#8249;&nbsp;&nbsp;Back to projects</a>
+  <span class="who">Catcher framing</span>
+</div>
+
+<main>
+  <h1>Catcher framing in the shadow zone</h1>
+  <p class="sub" id="sub"></p>
+  <div id="banner"></div>
+
+  <p class="intro">
+    Every take on the edge of the zone is a coin the umpire flips, and a catcher can
+    weight it. This grades catchers on the only pitches where that happens, the
+    <b>shadow</b>: the band a third of a zone either side of the edge. A ball stolen
+    for a strike earns credit that grows with how far off the plate it was, a strike
+    given away costs more the deeper in the zone it was, and the result is checked
+    against a gradient-boosted called-strike model that knows the location, the
+    movement, the count and who was behind the plate.
+  </p>
+
+  <nav class="toc">
+    <a href="#leaders">Leaderboard</a>
+    <a href="#zones">Zone heatmaps</a>
+    <a href="#validation">Validation</a>
+    <a href="#model">Strike model</a>
+    <a href="#method">Method</a>
+  </nav>
+
+  <div class="kpis" id="kpis"></div>
+
+  <!-- ============================ LEADERS ============================ -->
+  <section id="leaders">
+    <h2>Leaders and laggards</h2>
+    <p class="lede">Frame Score is net weighted points per 100 shadow takes. The grade puts
+      it on the 20&ndash;80 scouting scale among qualified catchers: 50 is average and
+      every 10 points is one standard deviation. The model columns are the check:
+      strikes added over what the model expected, per 100 shadow takes, and the
+      framing runs that is worth across every take. Pick a row to see his zone.</p>
+    <div class="controls">
+      <label>Season</label><span class="pills" id="scopes"></span>
+    </div>
+    <div class="two">
+      <div class="panel"><h3>Best framers</h3><div class="tablewrap"><table id="top"></table></div></div>
+      <div class="panel"><h3>Worst framers</h3><div class="tablewrap"><table id="bottom"></table></div></div>
+    </div>
+    <details>
+      <summary>Every qualified catcher</summary>
+      <div class="panel"><div class="tablewrap"><table id="all"></table></div></div>
+    </details>
+  </section>
+
+  <!-- ============================ ZONES ============================ -->
+  <section id="zones">
+    <h2>Zone heatmaps</h2>
+    <p class="lede">The zone from the catcher's view, scaled to each hitter's own top and
+      bottom so every batter's zone is the same square. The solid box is the rulebook
+      edge; the dotted boxes bound the shadow. <b>Frame score vs league</b> is his
+      average points per take in each cell less the league's, so an average receiver
+      is blank; <b>raw</b> leaves the league in; <b>model</b> shows called strikes
+      over the model's expectation on every take.</p>
+    <div class="controls">
+      <label for="who">Catcher</label><select id="who"></select>
+      <span class="pills" id="views"></span>
+    </div>
+    <div class="heatwrap">
+      <div class="panel">
+        <svg id="heat" viewBox="0 0 420 440" width="100%" role="img" aria-label="Zone heatmap"></svg>
+        <div class="legend" id="heatlegend"></div>
+      </div>
+      <div class="panel card" id="card"></div>
+    </div>
+    <h3 style="margin-top:26px">Top five, frame score vs league</h3>
+    <div class="minis" id="minisTop"></div>
+    <h3 style="margin-top:18px">Bottom five, frame score vs league</h3>
+    <div class="minis" id="minisBot"></div>
+  </section>
+
+  <!-- ============================ VALIDATION ============================ -->
+  <section id="validation">
+    <h2>Does the grade agree with the model?</h2>
+    <p class="lede" id="valLede"></p>
+    <div class="two">
+      <div class="panel">
+        <h3>Frame Score vs model strikes added, per 100 shadow takes</h3>
+        <svg id="scatter" viewBox="0 0 520 380" width="100%"></svg>
+      </div>
+      <div class="panel">
+        <h3>Across the shadow: called-strike rate and the model</h3>
+        <svg id="profile" viewBox="0 0 520 250" width="100%"></svg>
+        <div class="legend">
+          <span class="key"><span class="sw" style="background:var(--ink)"></span>Observed</span>
+          <span class="key"><span class="sw" style="background:var(--field);height:2px;border-top:2px dashed var(--field);background:none"></span>Model</span>
+        </div>
+        <h3 style="margin-top:16px">Grade weight by distance</h3>
+        <svg id="weights" viewBox="0 0 520 130" width="100%"></svg>
+      </div>
+    </div>
+    <div class="three" style="margin-top:18px" id="valStats"></div>
+  </section>
+
+  <!-- ============================ MODEL ============================ -->
+  <section id="model">
+    <h2>The called-strike model</h2>
+    <p class="lede" id="modelLede"></p>
+    <div class="panel" style="margin-bottom:18px">
+      <h3>Held-out performance</h3>
+      <div class="tablewrap"><table id="metrics"></table></div>
+    </div>
+    <div class="three">
+      <div class="panel"><h3>Calibration</h3><svg id="cal" viewBox="0 0 340 320" width="100%"></svg></div>
+      <div class="panel"><h3>ROC curve</h3><svg id="roc" viewBox="0 0 340 320" width="100%"></svg></div>
+      <div class="panel"><h3>Predicted strike probability, league average</h3>
+        <svg id="surface" viewBox="0 0 340 340" width="100%"></svg>
+        <div class="legend"><span>0%</span><span class="ramp" id="greenRamp"></span><span>100%</span>
+          <span class="key"><span class="sw" style="background:var(--gold)"></span>50% line</span></div>
+      </div>
+    </div>
+    <div class="two" style="margin-top:18px">
+      <div class="panel"><h3>Feature importance (share of split gain)</h3><svg id="imp" viewBox="0 0 520 300" width="100%"></svg></div>
+      <div class="panel"><h3>Umpire zones, same pitches: most and least generous</h3><svg id="umps" viewBox="0 0 520 470" width="100%"></svg></div>
+    </div>
+    <div class="panel" style="margin-top:18px">
+      <h3>Grid search, grouped cross-validation by game</h3>
+      <div class="tablewrap"><table id="grid"></table></div>
+    </div>
+  </section>
+
+  <!-- ============================ METHOD ============================ -->
+  <section id="method" class="method">
+    <h2>Method</h2>
+    <p><b>Data.</b> Every regular-season pitch from Baseball Savant for the seasons
+      shown, reduced to takes the plate umpire had to call: called strikes, balls and
+      blocked balls, with pitchouts and intentional balls removed. Statcast's own
+      umpire field is empty, so the home plate umpire comes from the MLB Stats API and
+      is joined on the game.</p>
+    <p><b>Model.</b> A LightGBM classifier on plate location, the batter's zone top and
+      bottom, horizontal and induced vertical break, the count, batter and pitcher
+      handedness, and the umpire as a native categorical feature, so each umpire can
+      carry his own zone shape and not just a single shift. The catcher is deliberately left out:
+      whatever the model cannot explain about a call is what framing is credited with.
+      Hyperparameters come from a grid search scored on log loss, with folds grouped by
+      game so no game's pitches sit on both sides of a split; diagnostics are on a
+      held-out fifth of games. The probabilities used for framing are out-of-fold, so
+      no pitch is scored by a model that saw it.</p>
+    <p><b>Zone.</b> Positions are in zone units: 0 is the middle, &plusmn;1 is the edge of
+      the plate widened by a ball's radius horizontally, and the batter's own
+      <code>sz_bot</code> and <code>sz_top</code> widened the same way vertically.
+      Distance from the middle is the larger of the two. The shadow runs from 0.67 to
+      1.33, which is how Savant draws its attack zones.</p>
+    <p id="gradeMethod"></p>
+    <p><b>Validation.</b> The grade is transparent but blunt: it knows where a pitch was,
+      not who called it or what it looked like on the way in. The model knows both. The
+      check is whether the two rank catchers the same way, whether the extra credit for
+      distance goes to pitches the model also thought unlikely, and whether each
+      measure repeats from one season to the next.</p>
+    <p id="source"></p>
+  </section>
+</main>
+
+<div class="tip" id="tip"></div>
+
+<footer class="wrap">
+  <span>&copy; 2026 Trey Chase</span>
+  <span><a href="https://github.com/treychase/Catcher-Framing">Code on GitHub</a></span>
+</footer>
+
+<script>
+const D = /*__PAYLOAD__*/null;
+</script>
+<script>
+(function(){
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+const $ = id => document.getElementById(id);
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const C = {ink:css("--ink"),muted:css("--muted"),field:css("--field"),gold:css("--gold"),
+           cool:css("--cool"),warm:css("--warm"),mid:css("--mid"),line:css("--line")};
+const tip = $("tip");
+const fmt = (v,d=1,sign=false) => v==null||isNaN(v) ? "–" : (sign&&v>0?"+":"")+Number(v).toFixed(d);
+const pct = (v,d=1) => v==null ? "–" : (100*v).toFixed(d)+"%";
+const int = v => v==null ? "–" : Math.round(v).toLocaleString();
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function el(tag, attrs, parent){
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs||{}) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function text(parent, x, y, s, attrs){ const t = el("text", Object.assign({x, y}, attrs||{}), parent); t.textContent = s; return t; }
+function showTip(ev, html){ tip.innerHTML = html; tip.style.opacity = 1; moveTip(ev); }
+function moveTip(ev){
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + w > innerWidth - 8) x = ev.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = ev.clientY - h - 14;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+function hideTip(){ tip.style.opacity = 0; }
+function hover(node, html){
+  node.addEventListener("mouseenter", e => showTip(e, typeof html === "function" ? html() : html));
+  node.addEventListener("mousemove", moveTip);
+  node.addEventListener("mouseleave", hideTip);
+}
+
+// ---------- colour ----------
+function hex2rgb(h){ h = h.replace("#",""); return [0,2,4].map(i => parseInt(h.slice(i,i+2),16)); }
+function mix(a, b, t){ const A = hex2rgb(a), B = hex2rgb(b); return "rgb(" + A.map((v,i) => Math.round(v + (B[i]-v)*t)).join(",") + ")"; }
+function diverge(v, max){
+  if (v == null) return null;
+  const t = Math.max(-1, Math.min(1, v / max));
+  return t >= 0 ? mix(C.mid, C.warm, Math.pow(t, .8)) : mix(C.mid, C.cool, Math.pow(-t, .8));
+}
+function greens(t){ t = Math.max(0, Math.min(1, t)); return mix("#F4F6F0", "#153F2E", t); }
+function gradeColor(g){
+  if (g == null) return C.muted;
+  const t = (g - 50) / 30;
+  return t >= 0 ? mix("#8a6d3b", C.warm, Math.min(1,t*1.4)) : mix("#5b6f86", C.cool, Math.min(1,-t*1.4));
+}
+
+// ---------- header ----------
+const M = D.meta, data = M.data;
+const scopeNames = {all: M.seasons.join("–")};
+M.seasons.forEach(s => scopeNames[String(s)] = String(s));
+$("sub").textContent = `${M.seasons.join("–")} regular season · ${data.first_date} to ${data.last_date} · built ${M.built}`;
+if (M.synthetic) $("banner").innerHTML = '<div class="banner"><b>Synthetic data.</b> This build ran on generated pitches to test the pipeline. The names and numbers below are not real.</div>';
+
+const V = D.validation, MOD = D.model;
+const rFS = V.catcher.frame_score_vs_model;
+$("kpis").innerHTML = [
+  [int(data.called_pitches), "Called pitches"],
+  [int(data.shadow_pitches), "Shadow takes graded"],
+  [fmt(MOD.test.auc, 3), "Model AUC, held-out games"],
+  [fmt(MOD.test.log_loss, 3), "Log loss, held-out (" + fmt(MOD.test_without_umpire.log_loss,3) + " without umpire)"],
+  [rFS.pearson == null ? "–" : fmt(rFS.pearson, 2), "Correlation, grade vs model"],
+  [int(data.umpires), "Umpires modelled"],
+].map(([v,l]) => `<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
+
+// ---------- leaderboards ----------
+let scope = "all", selected = null, view = "rel";
+const scopesEl = $("scopes");
+["all", ...M.seasons.map(String)].filter(k => D.leaders[k]).forEach(k => {
+  const b = document.createElement("button");
+  b.textContent = scopeNames[k] || k; b.dataset.k = k;
+  if (k === scope) b.classList.add("on");
+  b.onclick = () => { scope = k; [...scopesEl.children].forEach(x => x.classList.toggle("on", x === b)); renderAll(); };
+  scopesEl.appendChild(b);
+});
+
+const COLS = [
+  {k:"rank", l:"Rk", f:(r,i)=>i+1},
+  {k:"catcher", l:"Catcher", cls:"l", f:r=>esc(r.catcher)},
+  {k:"grade", l:"Grade", f:r=>`<span class="grade" style="background:${gradeColor(r.grade)}">${r.grade ?? "–"}</span>`},
+  {k:"frame_score_100", l:"FS/100", f:r=>`<span class="${r.frame_score_100>=0?"pos":"neg"}">${fmt(r.frame_score_100,1,true)}</span>`},
+  {k:"stolen", l:"Stolen", f:r=>int(r.stolen)},
+  {k:"lost", l:"Lost", f:r=>int(r.lost)},
+  {k:"shadow", l:"Shadow", f:r=>int(r.shadow)},
+  {k:"strikes_added_100", l:"Model SA/100", f:r=>fmt(r.strikes_added_100,1,true)},
+  {k:"framing_runs", l:"Runs", f:r=>fmt(r.framing_runs,1,true)},
+];
+function table(elm, rows, opts){
+  opts = opts || {};
+  const head = "<thead><tr>" + COLS.map(c => `<th class="${c.cls||""} ${opts.sortable&&c.k!=="rank"?"sort":""}" data-k="${c.k}">${c.l}</th>`).join("") + "</tr></thead>";
+  const body = "<tbody>" + rows.map((r,i) => `<tr data-id="${r.catcher_id}" class="${String(r.catcher_id)===selected?"sel":""}">` +
+    COLS.map(c => `<td class="${c.cls||""}">${c.k==="rank" && opts.rank ? opts.rank(r,i) : c.f(r,i)}</td>`).join("") + "</tr>").join("") + "</tbody>";
+  elm.innerHTML = head + body;
+  elm.querySelectorAll("tbody tr").forEach(tr => tr.onclick = () => { select(tr.dataset.id); $("zones").scrollIntoView(); });
+  if (opts.sortable) elm.querySelectorAll("th.sort").forEach(th => th.onclick = () => opts.sortable(th.dataset.k));
+}
+let sortKey = "frame_score_100", sortDir = -1;
+function renderTables(){
+  const rows = D.leaders[scope].slice().sort((a,b) => b.frame_score_100 - a.frame_score_100);
+  const n = rows.length;
+  table($("top"), rows.slice(0, 10));
+  table($("bottom"), rows.slice(-10).reverse(), {rank:(r,i) => n - i});
+  const all = rows.slice().sort((a,b) => {
+    const x = a[sortKey], y = b[sortKey];
+    return (typeof x === "string" ? x.localeCompare(y) : (x - y)) * sortDir;
+  });
+  const rankOf = new Map(rows.map((r,i) => [r.catcher_id, i+1]));
+  table($("all"), all, {rank:r => rankOf.get(r.catcher_id), sortable:k => { sortDir = k === sortKey ? -sortDir : -1; sortKey = k; renderTables(); }});
+}
+
+// ---------- heatmaps ----------
+const H = D.heat, BINS = H.bins, EXT = H.extent;
+const VIEWS = {rel:"Frame score vs league", fs:"Frame score, raw", sa:"Model strikes added"};
+const viewsEl = $("views");
+Object.entries(VIEWS).forEach(([k,l]) => {
+  const b = document.createElement("button"); b.textContent = l;
+  if (k === view) b.classList.add("on");
+  b.onclick = () => { view = k; [...viewsEl.children].forEach(x => x.classList.toggle("on", x === b)); renderHeat(); };
+  viewsEl.appendChild(b);
+});
+function gridFor(id, v, sc){
+  const h = H.catchers[sc][id]; if (!h) return null;
+  if (v === "sa") return h.sa;
+  if (v === "fs") return h.fs;
+  const L = H.league[sc];
+  return h.fs.map((row,i) => row.map((x,j) => x == null || L[i][j] == null ? null : x - L[i][j]));
+}
+const SCALE = {};
+function scaleFor(v, sc){
+  const key = v + sc; if (SCALE[key]) return SCALE[key];
+  const vals = [];
+  Object.keys(H.catchers[sc]).forEach(id => (gridFor(id, v, sc)||[]).forEach(r => r.forEach(x => { if (x != null) vals.push(Math.abs(x)); })));
+  vals.sort((a,b) => a-b);
+  return SCALE[key] = Math.max(1e-3, vals[Math.floor(.95 * (vals.length-1))] || 1);
+}
+function drawZone(svg, grid, max, x0, y0, size, withHover, name){
+  const cell = size / BINS;
+  const g = el("g", {}, svg);
+  el("rect", {x:x0, y:y0, width:size, height:size, fill:"#FBFCF9", stroke:C.line}, g);
+  grid.forEach((row,i) => row.forEach((v,j) => {
+    if (v == null) return;
+    const r = el("rect", {x:x0 + j*cell + .5, y:y0 + i*cell + .5, width:cell - 1, height:cell - 1, rx:1.5, fill:diverge(v, max)}, g);
+    if (withHover) {
+      const cx = -EXT + (j + .5) * 2*EXT/BINS, cz = EXT - (i + .5) * 2*EXT/BINS;
+      hover(r, () => `${esc(name)}<br>${VIEWS[view]}: <b>${fmt(v, 3, true)}</b><br>horizontal ${fmt(cx,2)} · vertical ${fmt(cz,2)} zone units`);
+    }
+  }));
+  const u = size / (2*EXT), cx = x0 + size/2, cy = y0 + size/2;
+  [[.67,"3 3"],[1.33,"3 3"],[1,null]].forEach(([s,dash]) => {
+    el("rect", Object.assign({x:cx - s*u, y:cy - s*u, width:2*s*u, height:2*s*u, fill:"none",
+      stroke:dash?C.muted:C.ink, "stroke-width":dash?1:1.8, "pointer-events":"none"}, dash?{"stroke-dasharray":dash}:{}), g);
+  });
+  // home plate, catcher's view, under the zone
+  return g;
+}
+function renderHeat(){
+  const svg = $("heat"); svg.innerHTML = "";
+  const rows = D.leaders[scope];
+  if (!selected || !H.catchers[scope][selected]) selected = rows.length ? String(rows.slice().sort((a,b)=>b.frame_score_100-a.frame_score_100)[0].catcher_id) : null;
+  const who = $("who");
+  who.innerHTML = rows.slice().sort((a,b) => a.catcher.localeCompare(b.catcher))
+    .map(r => `<option value="${r.catcher_id}" ${String(r.catcher_id)===selected?"selected":""}>${esc(r.catcher)}</option>`).join("");
+  if (!selected) return;
+  const r = rows.find(x => String(x.catcher_id) === selected);
+  const grid = gridFor(selected, view, scope), max = scaleFor(view, scope);
+  drawZone(svg, grid, max, 20, 10, 380, true, r.catcher);
+  const u = 380 / (2*EXT);
+  // plate under the box
+  const px = 210, py = 10 + 380 + 16, w = 0.708/0.829 * u;
+  el("path", {d:`M${px-w},${py} L${px+w},${py} L${px+w},${py+6} L${px},${py+14} L${px-w},${py+6} Z`, fill:"#fff", stroke:C.muted}, svg);
+  text(svg, 20, 434, "Catcher's view", {"font-size":9});
+  text(svg, 400, 434, "zone scaled to each hitter", {"font-size":9, "text-anchor":"end"});
+  const unit = view === "sa" ? "strikes per take" : "points per shadow take";
+  $("heatlegend").innerHTML = `<span>${fmt(-max,2)}</span><span class="ramp" style="background:linear-gradient(90deg,${C.cool},${C.mid},${C.warm})"></span><span>${fmt(max,2,true)}</span><span>${unit}</span>`;
+  $("card").innerHTML = `<h4>${esc(r.catcher)}</h4><p class="sub">${scopeNames[scope]} · ${int(r.called)} called pitches</p>
+    <p style="margin:0 0 14px"><span class="grade" style="background:${gradeColor(r.grade)};font-size:15px;padding:6px 10px">${r.grade ?? "–"}</span>
+    <span style="font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-left:8px">Framing grade · model grade ${r.model_grade ?? "–"}</span></p>
+    <dl class="stats">
+      <dt>Frame Score per 100 shadow takes</dt><dd>${fmt(r.frame_score_100,1,true)}</dd>
+      <dt>Net Frame Score</dt><dd>${fmt(r.frame_score,1,true)}</dd>
+      <dt>Shadow takes</dt><dd>${int(r.shadow)}</dd>
+      <dt>Balls stolen for strikes</dt><dd>${int(r.stolen)} (${pct(r.stolen_rate)})</dd>
+      <dt>Strikes lost to balls</dt><dd>${int(r.lost)} (${pct(r.lost_rate)})</dd>
+      <dt>Model strikes added per 100 shadow</dt><dd>${fmt(r.strikes_added_100,1,true)}</dd>
+      <dt>Model strikes added, all takes</dt><dd>${fmt(r.strikes_added,1,true)}</dd>
+      <dt>Framing runs</dt><dd>${fmt(r.framing_runs,1,true)}</dd>
+    </dl>`;
+  document.querySelectorAll("#top tr,#bottom tr,#all tr").forEach(tr => tr.classList.toggle("sel", tr.dataset.id === selected));
+}
+function select(id){ selected = String(id); renderHeat(); }
+$("who").onchange = e => select(e.target.value);
+function renderMinis(){
+  const rows = D.leaders[scope].slice().sort((a,b) => b.frame_score_100 - a.frame_score_100);
+  const max = scaleFor("rel", scope);
+  [[$("minisTop"), rows.slice(0,5)], [$("minisBot"), rows.slice(-5).reverse()]].forEach(([box, list]) => {
+    box.innerHTML = "";
+    list.forEach(r => {
+      const d = document.createElement("div"); d.className = "mini";
+      d.innerHTML = `<p class="n">${esc(r.catcher)}</p><p class="g" style="margin:0 0 6px">Grade ${r.grade ?? "–"} · FS/100 ${fmt(r.frame_score_100,1,true)}</p>`;
+      const s = el("svg", {viewBox:"0 0 140 140", width:"100%"}, d);
+      drawZone(s, gridFor(String(r.catcher_id), "rel", scope), max, 2, 2, 136, false, r.catcher);
+      d.onclick = () => { view = "rel"; [...viewsEl.children].forEach((x,i) => x.classList.toggle("on", i === 0)); select(r.catcher_id); $("zones").scrollIntoView(); };
+      box.appendChild(d);
+    });
+  });
+}
+
+// ---------- generic chart helpers ----------
+function axes(svg, o){
+  // o: {x0,x1,y0,y1, left,right,top,bottom, W,H, xt, yt, xl, yl, xf, yf}
+  const sx = v => o.left + (v - o.x0) / (o.x1 - o.x0) * (o.W - o.left - o.right);
+  const sy = v => o.H - o.bottom - (v - o.y0) / (o.y1 - o.y0) * (o.H - o.top - o.bottom);
+  const g = el("g", {class:"grid"}, svg);
+  (o.yt||[]).forEach(t => { el("line", {x1:o.left, x2:o.W - o.right, y1:sy(t), y2:sy(t)}, g); text(svg, o.left - 6, sy(t) + 3, (o.yf||String)(t), {"text-anchor":"end"}); });
+  (o.xt||[]).forEach(t => { el("line", {x1:sx(t), x2:sx(t), y1:o.top, y2:o.H - o.bottom}, g); text(svg, sx(t), o.H - o.bottom + 14, (o.xf||String)(t), {"text-anchor":"middle"}); });
+  el("line", {x1:o.left, x2:o.W - o.right, y1:o.H - o.bottom, y2:o.H - o.bottom, stroke:C.line}, svg);
+  if (o.xl) text(svg, (o.left + o.W - o.right)/2, o.H - 4, o.xl, {"text-anchor":"middle"});
+  if (o.yl) text(svg, 12, (o.top + o.H - o.bottom)/2, o.yl, {"text-anchor":"middle", transform:`rotate(-90 12 ${(o.top + o.H - o.bottom)/2})`});
+  return [sx, sy];
+}
+function ticks(a, b, n){
+  const step = Math.pow(10, Math.floor(Math.log10((b - a) / n)));
+  const err = (b - a) / n / step;
+  const s = step * (err >= 7.5 ? 10 : err >= 3 ? 5 : err >= 1.5 ? 2 : 1);
+  const out = []; for (let v = Math.ceil(a / s) * s; v <= b + 1e-9; v += s) out.push(+v.toFixed(10));
+  return out;
+}
+function line(svg, pts, sx, sy, attrs){
+  el("path", Object.assign({d:"M" + pts.map(p => sx(p[0]).toFixed(1) + "," + sy(p[1]).toFixed(1)).join("L"), fill:"none", "stroke-width":2, "stroke-linejoin":"round", "stroke-linecap":"round"}, attrs), svg);
+}
+
+// ---------- validation ----------
+function renderValidation(){
+  const pv = V.pitch, st = V.stability;
+  const r = rFS.pearson, rho = rFS.spearman;
+  $("valLede").innerHTML = `Across ${rFS.n} qualified catchers the rule-based Frame Score and the model's strikes added
+    correlate at <b>r = ${fmt(r,2)}</b> (Spearman ${fmt(rho,2)}), and ${V.catcher.top10_overlap} of the model's top ten are in the
+    grade's top ten. The model gave the strikes catchers stole an average strike probability of
+    <b>${pct(pv.p_strike_stolen)}</b>, against ${pct(pv.p_strike_out_of_zone_shadow)} for every out-of-zone shadow take, so the
+    credit goes to calls that really were in doubt.`;
+
+  // scatter
+  const svg = $("scatter"); svg.innerHTML = "";
+  const rows = D.leaders.all;
+  if (rows.length){
+    const xs = rows.map(d => d.strikes_added_100), ys = rows.map(d => d.frame_score_100);
+    const pad = (a) => { const lo = Math.min(...a), hi = Math.max(...a), p = (hi - lo) * .08 || 1; return [lo - p, hi + p]; };
+    const [x0,x1] = pad(xs), [y0,y1] = pad(ys);
+    const [sx, sy] = axes(svg, {x0,x1,y0,y1,left:48,right:14,top:10,bottom:40,W:520,H:380,
+      xt:ticks(x0,x1,6), yt:ticks(y0,y1,6), xl:"Model strikes added per 100 shadow takes", yl:"Frame Score per 100", xf:v=>fmt(v,1,true), yf:v=>fmt(v,0,true)});
+    // least squares fit
+    const n = xs.length, mx = xs.reduce((a,b)=>a+b,0)/n, my = ys.reduce((a,b)=>a+b,0)/n;
+    const b = xs.reduce((s,x,i)=>s+(x-mx)*(ys[i]-my),0) / Math.max(1e-9, xs.reduce((s,x)=>s+(x-mx)**2,0));
+    line(svg, [[x0, my + b*(x0-mx)], [x1, my + b*(x1-mx)]], sx, sy, {stroke:C.gold});
+    const sorted = rows.slice().sort((a,b) => b.frame_score_100 - a.frame_score_100);
+    const labelled = new Set([...sorted.slice(0,3), ...sorted.slice(-3)].map(d => d.catcher_id));
+    rows.forEach(d => {
+      const c = el("circle", {cx:sx(d.strikes_added_100), cy:sy(d.frame_score_100), r:4.5, fill:C.field, "fill-opacity":.8, stroke:"#fff", "stroke-width":1.5, style:"cursor:pointer"}, svg);
+      hover(c, `<b>${esc(d.catcher)}</b><br>Frame Score/100 ${fmt(d.frame_score_100,1,true)} · grade ${d.grade}<br>Model SA/100 ${fmt(d.strikes_added_100,1,true)} · grade ${d.model_grade}`);
+      c.onclick = () => { select(d.catcher_id); $("zones").scrollIntoView(); };
+      if (labelled.has(d.catcher_id)) { const right = sx(d.strikes_added_100) > 360; text(svg, sx(d.strikes_added_100) + (right ? -8 : 8), sy(d.frame_score_100) + 3, d.catcher, {fill:C.ink, "font-size":9.5, "text-anchor":right ? "end" : "start"}); }
+    });
+  }
+
+  // distance profile
+  const P = V.profile;
+  const ps = $("profile"); ps.innerHTML = "";
+  const lo = M.grading.heart_edge, hi = M.grading.shadow_outer;
+  let [sx, sy] = axes(ps, {x0:lo, x1:hi, y0:0, y1:1, left:44, right:12, top:10, bottom:34, W:520, H:250,
+    xt:[.7,.8,.9,1,1.1,1.2,1.3], yt:[0,.25,.5,.75,1], xl:"Distance from middle of zone (1 = edge)", yf:v=>Math.round(v*100)+"%", xf:v=>v.toFixed(1)});
+  el("line", {x1:sx(1), x2:sx(1), y1:10, y2:216, stroke:C.ink, "stroke-width":1, "stroke-dasharray":"2 3"}, ps);
+  text(ps, sx(1) + 4, 22, "zone edge", {"font-size":9});
+  line(ps, P.map(p => [p.distance, p.strike_rate]), sx, sy, {stroke:C.ink});
+  line(ps, P.map(p => [p.distance, p.p_strike]), sx, sy, {stroke:C.field, "stroke-dasharray":"5 4"});
+  P.forEach(p => {
+    const c = el("circle", {cx:sx(p.distance), cy:sy(p.strike_rate), r:4, fill:C.ink, stroke:"#fff", "stroke-width":1.5}, ps);
+    hover(c, `distance ${fmt(p.distance,2)}<br>observed ${pct(p.strike_rate)} · model ${pct(p.p_strike)}<br>${int(p.n)} takes · weight ${fmt(p.weight,2)}`);
+  });
+  const ws = $("weights"); ws.innerHTML = "";
+  [sx, sy] = axes(ws, {x0:lo, x1:hi, y0:0, y1:M.grading.max_weight, left:44, right:12, top:8, bottom:26, W:520, H:130,
+    xt:[.7,.8,.9,1,1.1,1.2,1.3], yt:[0,1,2], xf:v=>v.toFixed(1)});
+  const mw = M.grading.max_weight;
+  line(ws, [[lo, mw], [1, 1]], sx, sy, {stroke:C.cool});
+  line(ws, [[1, 1], [hi, mw]], sx, sy, {stroke:C.warm});
+  text(ws, sx(.69), sy(.35), "cost of a strike called a ball", {fill:C.cool, "font-size":9.5});
+  text(ws, sx(hi) - 2, sy(.35), "credit for a ball called a strike", {fill:C.warm, "font-size":9.5, "text-anchor":"end"});
+
+  const stab = st && st.frame_score ? `<dt>Frame Score, ${st.seasons[0]} to ${st.seasons[1]}</dt><dd>r = ${fmt(st.frame_score.pearson,2)} (n ${st.frame_score.n})</dd>
+    <dt>Model strikes added, ${st.seasons[0]} to ${st.seasons[1]}</dt><dd>r = ${st.model ? fmt(st.model.pearson,2) : "–"}</dd>` : "<dt>Needs two seasons</dt><dd>–</dd>";
+  $("valStats").innerHTML = `
+    <div class="panel"><h3>Catcher level</h3><dl class="stats">
+      <dt>Pearson r, grade vs model (shadow)</dt><dd>${fmt(rFS.pearson,2)}</dd>
+      <dt>Spearman rank correlation</dt><dd>${fmt(rFS.spearman,2)}</dd>
+      <dt>vs model on every take</dt><dd>${fmt(V.catcher.frame_score_vs_model_all_takes.pearson,2)}</dd>
+      <dt>Top ten in common</dt><dd>${V.catcher.top10_overlap} of 10</dd>
+      <dt>Bottom ten in common</dt><dd>${V.catcher.bottom10_overlap} of 10</dd></dl></div>
+    <div class="panel"><h3>Pitch level</h3><dl class="stats">
+      <dt>Model p, balls stolen for strikes</dt><dd>${pct(pv.p_strike_stolen)}</dd>
+      <dt>Model p, all out-of-zone shadow takes</dt><dd>${pct(pv.p_strike_out_of_zone_shadow)}</dd>
+      <dt>Model p, strikes lost to balls</dt><dd>${pct(pv.p_strike_lost)}</dd>
+      <dt>Model p, all in-zone shadow takes</dt><dd>${pct(pv.p_strike_in_zone_shadow)}</dd>
+      <dt>Credit weight vs model surprise, r</dt><dd>${fmt(pv.weight_vs_surprise_stolen.pearson,2)}</dd>
+      <dt>Cost weight vs model surprise, r</dt><dd>${fmt(pv.weight_vs_surprise_lost.pearson,2)}</dd></dl></div>
+    <div class="panel"><h3>Year to year</h3><dl class="stats">${stab}</dl>
+      <p style="font-size:13px;color:var(--muted);margin:10px 0 0">Catchers qualified in both seasons. A number that repeats is measuring the catcher, not the draw.</p></div>`;
+}
+
+// ---------- model diagnostics ----------
+function renderModel(){
+  const bp = MOD.best_params;
+  $("modelLede").innerHTML = `LightGBM on ${int(MOD.train_rows)} training takes, tuned by grid search
+    (best: ${Object.entries(bp).map(([k,v]) => `${k.replace(/_/g," ")} ${v}`).join(", ")}), and scored on
+    ${int(MOD.test_rows)} takes from games it never saw. Adding the umpire moves held-out log loss from
+    ${fmt(MOD.test_without_umpire.log_loss,4)} to ${fmt(MOD.test.log_loss,4)}.`;
+  const rowsM = [["Held-out games", MOD.test], ["Held-out, shadow only", MOD.test_shadow],
+                 ["Held-out, no umpire feature", MOD.test_without_umpire], ["Out-of-fold, every take", MOD.oof]];
+  $("metrics").innerHTML = `<thead><tr><th class="l">Sample</th><th>Takes</th><th>Strike rate</th><th>AUC</th><th>Log loss</th><th>Brier</th><th>Accuracy</th><th>McFadden R²</th></tr></thead><tbody>` +
+    rowsM.map(([l,m]) => `<tr><td class="l">${l}</td><td>${int(m.n)}</td><td>${pct(m.strike_rate)}</td><td>${fmt(m.auc,3)}</td><td>${fmt(m.log_loss,4)}</td><td>${fmt(m.brier,4)}</td><td>${pct(m.accuracy)}</td><td>${fmt(m.mcfadden_r2,3)}</td></tr>`).join("") + "</tbody>";
+  $("metrics").querySelectorAll("tr").forEach(tr => tr.style.cursor = "default");
+
+  // calibration
+  let s = $("cal"); s.innerHTML = "";
+  let [sx, sy] = axes(s, {x0:0,x1:1,y0:0,y1:1,left:40,right:10,top:10,bottom:36,W:340,H:320,xt:[0,.25,.5,.75,1],yt:[0,.25,.5,.75,1],
+    xf:v=>Math.round(v*100)+"%", yf:v=>Math.round(v*100)+"%", xl:"Predicted", yl:"Observed"});
+  line(s, [[0,0],[1,1]], sx, sy, {stroke:C.muted, "stroke-width":1, "stroke-dasharray":"3 3"});
+  line(s, MOD.calibration.map(d => [d.predicted, d.observed]), sx, sy, {stroke:C.field});
+  MOD.calibration.forEach(d => { const c = el("circle", {cx:sx(d.predicted), cy:sy(d.observed), r:4, fill:C.field, stroke:"#fff", "stroke-width":1.5}, s);
+    hover(c, `predicted ${pct(d.predicted)}<br>observed ${pct(d.observed)}<br>${int(d.n)} takes`); });
+
+  // roc
+  s = $("roc"); s.innerHTML = "";
+  [sx, sy] = axes(s, {x0:0,x1:1,y0:0,y1:1,left:40,right:10,top:10,bottom:36,W:340,H:320,xt:[0,.25,.5,.75,1],yt:[0,.25,.5,.75,1],
+    xl:"False positive rate", yl:"True positive rate"});
+  line(s, [[0,0],[1,1]], sx, sy, {stroke:C.muted, "stroke-width":1, "stroke-dasharray":"3 3"});
+  line(s, MOD.roc.map(d => [d.fpr, d.tpr]), sx, sy, {stroke:C.field});
+  text(s, sx(.55), sy(.2), "AUC " + fmt(MOD.test.auc,3), {fill:C.ink, "font-size":12});
+
+  // probability surface
+  s = $("surface"); s.innerHTML = "";
+  const S = MOD.surface, n = S.axis.length, size = 300, x0 = 30, y0 = 6, cell = size / n;
+  const lo = S.axis[0], hi = S.axis[n-1], u = size / (hi - lo);
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    const v = S.p[i][j];
+    el("rect", {x:x0 + j*cell, y:y0 + (n-1-i)*cell, width:cell + .3, height:cell + .3, fill:greens(v)}, s);
+  }
+  // 50% contour, drawn as cell edges where the surface crosses one half
+  let d = "";
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    const a = S.p[i][j] >= .5;
+    if (j < n-1 && a !== (S.p[i][j+1] >= .5)) d += `M${x0+(j+1)*cell},${y0+(n-1-i)*cell}v${cell}`;
+    if (i < n-1 && a !== (S.p[i+1][j] >= .5)) d += `M${x0+j*cell},${y0+(n-1-i)*cell}h${cell}`;
+  }
+  el("path", {d, stroke:C.gold, "stroke-width":2, fill:"none"}, s);
+  const cx = x0 + size/2, cy = y0 + size/2;
+  el("rect", {x:cx - u, y:cy - u, width:2*u, height:2*u, fill:"none", stroke:"#fff", "stroke-width":1.5, "stroke-dasharray":"4 3"}, s);
+  const hit = el("rect", {x:x0, y:y0, width:size, height:size, fill:"transparent"}, s);
+  hit.addEventListener("mousemove", e => {
+    const b = s.getBoundingClientRect(), k = 340 / b.width;
+    const j = Math.floor(((e.clientX - b.left) * k - x0) / cell), i = n - 1 - Math.floor(((e.clientY - b.top) * k - y0) / cell);
+    if (i < 0 || j < 0 || i >= n || j >= n) return hideTip();
+    showTip(e, `horizontal ${fmt(S.axis[j],2)} · vertical ${fmt(S.axis[i],2)}<br>strike probability <b>${pct(S.p[i][j])}</b>`);
+  });
+  hit.addEventListener("mouseleave", hideTip);
+  text(s, cx, y0 + size + 16, "catcher's view · dashed box is the rulebook edge", {"text-anchor":"middle", "font-size":9});
+  $("greenRamp").style.background = `linear-gradient(90deg, ${greens(0)}, ${greens(.5)}, ${greens(1)})`;
+
+  // importance
+  s = $("imp"); s.innerHTML = "";
+  const I = MOD.importance, bh = 26, left = 90, W = 520, maxI = Math.max(...I.map(d => d.share));
+  s.setAttribute("viewBox", `0 0 520 ${I.length*bh + 16}`);
+  I.forEach((d,i) => {
+    const w = (W - left - 60) * d.share / maxI, y = 6 + i*bh;
+    text(s, left - 8, y + 14, d.feature, {"text-anchor":"end", fill:C.ink});
+    const r = el("rect", {x:left, y:y + 4, width:Math.max(1,w), height:bh - 10, rx:3, fill:C.field}, s);
+    hover(r, `${d.feature}: ${pct(d.share)} of split gain`);
+    text(s, left + w + 6, y + 14, pct(d.share), {});
+  });
+
+  // umpires
+  s = $("umps"); s.innerHTML = "";
+  const U = MOD.umpires, show = U.length > 20 ? U.slice(0,10).concat(U.slice(-10)) : U;
+  const uh = 21, ul = 150, mid = ul + (W - ul - 20)/2, span = Math.max(...show.map(d => Math.abs(d.vs_average))) || 1;
+  s.setAttribute("viewBox", `0 0 520 ${show.length*uh + 40}`);
+  show.forEach((d,i) => {
+    const y = 6 + i*uh + (U.length > 20 && i >= 10 ? 10 : 0), w = (W - ul - 40)/2 * Math.abs(d.vs_average) / span;
+    text(s, ul - 8, y + 13, d.umpire, {"text-anchor":"end", fill:C.ink});
+    const r = el("rect", {x:d.vs_average >= 0 ? mid : mid - w, y:y + 3, width:Math.max(1,w), height:uh - 7, rx:3, fill:d.vs_average >= 0 ? C.warm : C.cool}, s);
+    hover(r, `<b>${esc(d.umpire)}</b><br>expected strike rate ${pct(d.expected_strike_rate)} on the reference shadow takes<br>${fmt(100*d.vs_average,1,true)} points vs average · ${d.games} games`);
+  });
+  el("line", {x1:mid, x2:mid, y1:0, y2:show.length*uh + 16, stroke:C.muted}, s);
+  text(s, mid, show.length*uh + 34, "strike rate vs average on identical shadow takes (pct. points)", {"text-anchor":"middle", "font-size":9});
+
+  // grid table
+  const G = MOD.grid;
+  $("grid").innerHTML = `<thead><tr><th>Rank</th><th>Leaves</th><th>Learning rate</th><th>Trees</th><th>Min child</th><th>CV log loss</th><th>± sd</th><th>Train log loss</th><th>Fit (s)</th></tr></thead><tbody>` +
+    G.map(g => `<tr style="cursor:default${g.rank===1?";background:rgba(223,162,44,.16)":""}"><td>${g.rank}</td><td>${g.num_leaves}</td><td>${g.learning_rate}</td><td>${g.n_estimators}</td><td>${g.min_child_samples}</td><td><b>${fmt(g.cv_log_loss,4)}</b></td><td>${fmt(g.cv_log_loss_sd,4)}</td><td>${fmt(g.train_log_loss,4)}</td><td>${fmt(g.fit_seconds,1)}</td></tr>`).join("") + "</tbody>";
+}
+
+function renderMethod(){
+  const g = M.grading;
+  $("gradeMethod").innerHTML = `<b>Grade.</b> Each shadow take scores zero if it was called correctly. A ball called a strike
+    earns credit from 1 point at the edge up to ${g.max_weight} at the shadow's outer border, rising linearly with distance; a strike
+    called a ball costs from 1 at the edge up to ${g.max_weight} at the shadow's inner border. Frame Score per 100 is the net, per 100
+    shadow takes; the grade is 50 + 10 &times; its z-score among qualified catchers, bounded to 20&ndash;80. Qualifying takes
+    ${int(g.min_shadow)} shadow takes over both seasons, or ${int(g.min_shadow_season)} in one. Framing runs are the model's strikes
+    added on every take at ${g.runs_per_strike} runs a strike.`;
+  $("source").innerHTML = `<b>Source.</b> ${int(data.called_pitches)} called pitches in ${int(data.games)} games, ${data.first_date} to ${data.last_date}.
+    ${data.unknown_umpire_share > 0 ? pct(data.unknown_umpire_share,2) + " of takes had no umpire on record and are modelled as an unknown umpire." : ""}
+    Code, tests and the pipeline that rebuilds this page are on <a href="https://github.com/treychase/Catcher-Framing">GitHub</a>.`;
+}
+
+function renderAll(){ renderTables(); renderHeat(); renderMinis(); }
+renderAll(); renderValidation(); renderModel(); renderMethod();
+})();
+</script>
+</body>
+</html>

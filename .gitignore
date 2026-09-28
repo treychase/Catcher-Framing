@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+# Raw Statcast pulls are large and re-fetchable; the pipeline caches them in CI.
+data/

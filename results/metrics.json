@@ -1,0 +1,140 @@
+{
+  "built": "2026-09-28",
+  "synthetic": false,
+  "seasons": [
+    2025,
+    2026
+  ],
+  "data": {
+    "called_pitches": 740166,
+    "games": 4859,
+    "catchers": 132,
+    "umpires": 95,
+    "first_date": "2025-03-18",
+    "last_date": "2026-09-27",
+    "shadow_pitches": 278977,
+    "unknown_umpire_share": 0.0,
+    "by_season": {
+      "2025": 368781,
+      "2026": 371385
+    }
+  },
+  "model": {
+    "features": [
+      "plate_x",
+      "plate_z",
+      "sz_top",
+      "sz_bot",
+      "pfx_x",
+      "pfx_z",
+      "balls",
+      "strikes",
+      "umpire",
+      "stand",
+      "p_throws"
+    ],
+    "best_params": {
+      "num_leaves": 63,
+      "learning_rate": 0.05,
+      "n_estimators": 250,
+      "min_child_samples": 200
+    },
+    "test": {
+      "n": 149454,
+      "strike_rate": 0.31150052859073696,
+      "auc": 0.9891011408293024,
+      "log_loss": 0.12415840114256814,
+      "brier": 0.037819166443072705,
+      "accuracy": 0.9475089325143522,
+      "mcfadden_r2": 0.7998400770250382
+    },
+    "test_shadow": {
+      "n": 56209,
+      "strike_rate": 0.44451956092440714,
+      "auc": 0.9392472672631851,
+      "log_loss": 0.3125606276553577,
+      "brier": 0.09738552366270946,
+      "accuracy": 0.8637584728424273,
+      "mcfadden_r2": 0.5450211230791495
+    },
+    "test_without_umpire": {
+      "n": 149454,
+      "strike_rate": 0.31150052859073696,
+      "auc": 0.9888979978322324,
+      "log_loss": 0.12515817263478404,
+      "brier": 0.03823225349676678,
+      "accuracy": 0.9475557696682592,
+      "mcfadden_r2": 0.7982283118683275
+    },
+    "oof": {
+      "n": 740166,
+      "strike_rate": 0.31232723470140483,
+      "auc": 0.9891532567531804,
+      "log_loss": 0.12393941664502489,
+      "brier": 0.03772612444839541,
+      "accuracy": 0.9479900454762851,
+      "mcfadden_r2": 0.8004035763305185
+    },
+    "train_rows": 590712,
+    "test_rows": 149454
+  },
+  "validation": {
+    "pitch": {
+      "shadow_pitches": 278977,
+      "stolen": 21433,
+      "lost": 22843,
+      "p_strike_stolen": 0.3730565659091129,
+      "p_strike_out_of_zone_shadow": 0.1440938259458026,
+      "p_strike_lost": 0.5672346734280423,
+      "p_strike_in_zone_shadow": 0.8148944204316967,
+      "weight_vs_surprise_stolen": {
+        "n": 21433,
+        "pearson": 0.5387324022662175,
+        "spearman": 0.5485283501394463
+      },
+      "weight_vs_surprise_lost": {
+        "n": 22843,
+        "pearson": 0.4989296615805821,
+        "spearman": 0.5264175449950989
+      }
+    },
+    "catcher": {
+      "frame_score_vs_model": {
+        "n": 87,
+        "pearson": 0.9101356592029718,
+        "spearman": 0.9022380987096302
+      },
+      "frame_score_vs_model_all_takes": {
+        "n": 87,
+        "pearson": 0.9065215392759036,
+        "spearman": 0.9005795727928846
+      },
+      "top10_overlap": 8,
+      "bottom10_overlap": 4
+    },
+    "stability": {
+      "seasons": [
+        2025,
+        2026
+      ],
+      "frame_score": {
+        "n": 61,
+        "pearson": 0.2835603657143225,
+        "spearman": 0.2831306187202538
+      },
+      "model": {
+        "n": 61,
+        "pearson": 0.42949340721230306,
+        "spearman": 0.4601797990481227
+      }
+    }
+  },
+  "grading": {
+    "max_weight": 2.0,
+    "heart_edge": 0.67,
+    "shadow_outer": 1.33,
+    "min_shadow": 800,
+    "min_shadow_season": 450,
+    "runs_per_strike": 0.125
+  }
+}

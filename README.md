@@ -9,6 +9,50 @@ on every 2025 and 2026 regular-season take in Statcast.
 **Live page:** <https://treychase.github.io/projects/catcher-framing.html>
 
 <!-- RESULTS:START -->
+## Results, 2025-2026 (built 2026-10-26)
+
+740,165 called pitches in 4,859 games, 2025-03-18 to 2026-09-27; 95 umpires, 278,976 shadow takes graded.
+
+**Model, held-out games:** AUC 0.989, log loss 0.1246, Brier 0.0379, accuracy 94.8%. Shadow takes only: AUC 0.939. Without the umpire feature, log loss rises to 0.1260. Best grid point: num_leaves 15, learning_rate 0.05, n_estimators 500, min_child_samples 50.
+
+**Validation:** Frame Score vs model strikes added, r = 0.91 (Spearman 0.90) across 87 qualified catchers; 8 of 10 top framers in common. Stolen strikes carried a 37.1% model strike probability against 14.6% for all out-of-zone shadow takes. Year to year: r = 0.28 for Frame Score, 0.41 for model strikes added (n = 61).
+
+### Best framers
+| Rk | Catcher | Grade | FS/100 | Stolen | Lost | Shadow takes | Model SA/100 | Framing runs |
+|---|---|---|---|---|---|---|---|---|
+| 1 | Ali Sánchez | 80 | +8.6 | 122 | 54 | 1,027 | +4.4 | +5.9 |
+| 2 | Daniel Susac | 76 | +7.6 | 106 | 41 | 1,182 | +3.1 | +4.9 |
+| 3 | Brandon Valenzuela | 75 | +7.3 | 207 | 103 | 1,887 | +3.3 | +8.6 |
+| 4 | J.C. Escarra | 70 | +5.7 | 135 | 76 | 1,366 | +3.4 | +6.1 |
+| 5 | Drew Romo | 67 | +4.6 | 135 | 79 | 1,560 | +1.4 | +3.2 |
+| 6 | Patrick Bailey | 66 | +4.6 | 597 | 400 | 6,069 | +3.4 | +26.4 |
+| 7 | Alejandro Kirk | 65 | +4.3 | 509 | 342 | 5,127 | +3.4 | +22.6 |
+| 8 | Tyler Heineman | 63 | +3.4 | 266 | 184 | 2,904 | +2.4 | +9.4 |
+| 9 | Luke Maile | 62 | +3.1 | 81 | 61 | 851 | +2.8 | +3.9 |
+| 10 | Luis Torrens | 61 | +3.0 | 403 | 315 | 4,194 | +1.7 | +9.3 |
+
+### Worst framers
+| Rk | Catcher | Grade | FS/100 | Stolen | Lost | Shadow takes | Model SA/100 | Framing runs |
+|---|---|---|---|---|---|---|---|---|
+| 87 | Riley Adams | 24 | -8.4 | 147 | 296 | 2,314 | -4.2 | -12.1 |
+| 86 | Edgar Quero | 33 | -5.7 | 179 | 333 | 3,409 | -3.8 | -15.9 |
+| 85 | Jacob Stallings | 34 | -5.5 | 76 | 117 | 1,055 | -2.1 | -2.5 |
+| 84 | Danny Jansen | 34 | -5.3 | 242 | 398 | 3,931 | -3.1 | -14.3 |
+| 83 | Matt Thaiss | 35 | -5.0 | 90 | 140 | 1,286 | -2.9 | -3.9 |
+| 82 | Willie MacIver | 35 | -4.9 | 56 | 88 | 824 | -2.4 | -2.6 |
+| 81 | Will Smith | 36 | -4.7 | 291 | 462 | 4,517 | -2.0 | -10.3 |
+| 80 | Salvador Perez | 37 | -4.6 | 241 | 379 | 3,840 | -2.4 | -12.1 |
+| 79 | Martín Maldonado | 37 | -4.3 | 97 | 147 | 1,394 | -1.3 | -1.9 |
+| 78 | Mitch Garver | 38 | -4.0 | 121 | 180 | 1,994 | -2.2 | -5.1 |
+
+| | |
+|---|---|
+| ![Leaders](results/figures/heatmaps_leaders.png) | |
+| ![Laggards](results/figures/heatmaps_laggards.png) | |
+| ![Calibration](results/figures/calibration.png) | ![ROC](results/figures/roc.png) |
+| ![Strike probability](results/figures/strike_probability.png) | ![Feature importance](results/figures/feature_importance.png) |
+| ![Grade vs model](results/figures/grade_vs_model.png) | ![Shadow profile](results/figures/shadow_distance_profile.png) |
+| ![Umpires](results/figures/umpire_zones.png) | ![Grid search](results/figures/grid_search.png) |
 <!-- RESULTS:END -->
 
 ## What it does

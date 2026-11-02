@@ -1,5 +1,5 @@
 {
-  "built": "2026-10-26",
+  "built": "2026-11-02",
   "synthetic": false,
   "seasons": [
     2025,
@@ -52,7 +52,7 @@
       "n": 56208,
       "strike_rate": 0.4445096783376032,
       "auc": 0.9389709910883917,
-      "log_loss": 0.3131598546970158,
+      "log_loss": 0.31315985469701574,
       "brier": 0.09763396728023686,
       "accuracy": 0.8641296612581839,
       "mcfadden_r2": 0.5441473967909467
@@ -61,7 +61,7 @@
       "n": 149453,
       "strike_rate": 0.3114959217948117,
       "auc": 0.9887660939922596,
-      "log_loss": 0.12596905049080384,
+      "log_loss": 0.12596905049080387,
       "brier": 0.03850861708240327,
       "accuracy": 0.9467457996828434,
       "mcfadden_r2": 0.796919872264999
@@ -83,13 +83,13 @@
       "shadow_pitches": 278976,
       "stolen": 21432,
       "lost": 22843,
-      "p_strike_stolen": 0.37142486838741967,
+      "p_strike_stolen": 0.3714248683874197,
       "p_strike_out_of_zone_shadow": 0.14604635546151876,
       "p_strike_lost": 0.5695478433835499,
       "p_strike_in_zone_shadow": 0.8139131906584778,
       "weight_vs_surprise_stolen": {
         "n": 21432,
-        "pearson": 0.581716907754398,
+        "pearson": 0.5817169077543979,
         "spearman": 0.5943565191422574
       },
       "weight_vs_surprise_lost": {
@@ -101,7 +101,7 @@
     "catcher": {
       "frame_score_vs_model": {
         "n": 87,
-        "pearson": 0.9126551827936683,
+        "pearson": 0.9126551827936685,
         "spearman": 0.9026572865786983
       },
       "frame_score_vs_model_all_takes": {

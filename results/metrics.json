@@ -1,5 +1,5 @@
 {
-  "built": "2026-11-02",
+  "built": "2026-11-09",
   "synthetic": false,
   "seasons": [
     2025,
@@ -61,7 +61,7 @@
       "n": 149453,
       "strike_rate": 0.3114959217948117,
       "auc": 0.9887660939922596,
-      "log_loss": 0.12596905049080387,
+      "log_loss": 0.12596905049080384,
       "brier": 0.03850861708240327,
       "accuracy": 0.9467457996828434,
       "mcfadden_r2": 0.796919872264999
@@ -83,19 +83,19 @@
       "shadow_pitches": 278976,
       "stolen": 21432,
       "lost": 22843,
-      "p_strike_stolen": 0.3714248683874197,
-      "p_strike_out_of_zone_shadow": 0.14604635546151876,
+      "p_strike_stolen": 0.3714248683874198,
+      "p_strike_out_of_zone_shadow": 0.1460463554615188,
       "p_strike_lost": 0.5695478433835499,
-      "p_strike_in_zone_shadow": 0.8139131906584778,
+      "p_strike_in_zone_shadow": 0.8139131906584779,
       "weight_vs_surprise_stolen": {
         "n": 21432,
-        "pearson": 0.5817169077543979,
-        "spearman": 0.5943565191422574
+        "pearson": 0.5817169077543981,
+        "spearman": 0.5943565191422576
       },
       "weight_vs_surprise_lost": {
         "n": 22843,
         "pearson": 0.5043160384592899,
-        "spearman": 0.5347755318387072
+        "spearman": 0.5347755318387071
       }
     },
     "catcher": {
@@ -106,7 +106,7 @@
       },
       "frame_score_vs_model_all_takes": {
         "n": 87,
-        "pearson": 0.9077850726759348,
+        "pearson": 0.9077850726759351,
         "spearman": 0.8986658890427939
       },
       "top10_overlap": 8,
@@ -119,13 +119,13 @@
       ],
       "frame_score": {
         "n": 61,
-        "pearson": 0.2834876108765913,
+        "pearson": 0.2834876108765912,
         "spearman": 0.28313061872025386
       },
       "model": {
         "n": 61,
-        "pearson": 0.41418723495376353,
-        "spearman": 0.4556319407720782
+        "pearson": 0.4141872349537637,
+        "spearman": 0.45563194077207825
       }
     }
   },
